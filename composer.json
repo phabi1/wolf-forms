@@ -1,0 +1,14 @@
+{
+    "name": "wolf/forms",
+    "autoload": {
+        "psr-4": {
+            "Wolf\\Forms\\": "inc/"
+        }
+    },
+    "authors": [
+        {
+            "name": "phabi1"
+        }
+    ],
+    "require": {}
+}
