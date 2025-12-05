@@ -4,6 +4,11 @@ namespace Wolf\Forms\Form;
 
 class Loader
 {
+    /**
+     * @var bool
+     */
+    private $loaded = false;
+
     public function load()
     {
         if ($this->loaded) {
