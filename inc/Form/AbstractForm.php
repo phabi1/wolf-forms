@@ -4,16 +4,21 @@ namespace Wolf\Forms\Form;
 
 abstract class AbstractForm
 {
+    private $state;
+
+    public function setState(FormState $state)
+    {
+        $this->state = $state;
+    }
+
+    public function getState()
+    {
+        return $this->state;
+    }
+
+    public function validateForm() {}
+
     public abstract function getForm();
 
-    public function validateForm($data)
-    {
-        return new FormResult(true);
-    }
-
-    public function submitForm($data)
-    {
-        // Default submission logic
-        return true;
-    }
+    public abstract function submitForm();
 }

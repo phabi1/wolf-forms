@@ -2,43 +2,55 @@
 
 namespace Wolf\Forms\Form;
 
-class Loader
+use Wolf\Core\DependencyInjection\ContainerAwareInterface;
+use Wolf\Core\DependencyInjection\ContainerAwareTrait;
+
+class Loader implements ContainerAwareInterface
 {
-    /**
-     * @var bool
-     */
-    private $loaded = false;
+    use ContainerAwareTrait;
 
     public function load()
     {
-        if ($this->loaded) {
-            return;
-        }
 
-        if (!file_exists(WOLF_FORMS_PLUGIN_DIR . '/cache/forms.php')) {
-            $forms = [];
-            apply_filters('wolf_forms_load_forms', $forms);
+        if (!file_exists(WOLF_CORE_CACHE_DIR . '/forms.php')) {
+            $forms = $this->getForms();
 
             $this->prepareCacheDirectory();
 
             $this->saveCacheForms($forms);
         }
-
-        $this->loaded = true;
+        $forms = include WOLF_CORE_CACHE_DIR . '/forms.php';
+        return $forms;
     }
 
-    public function reset()
+    private function getForms()
     {
-        $cacheFile = WOLF_FORMS_PLUGIN_DIR . '/cache/forms.php';
-        if (file_exists($cacheFile)) {
-            unlink($cacheFile);
+        $forms = [];
+        $taggedServices = $this->container->getServicesByTag('wolf-forms.form');
+        foreach ($taggedServices as $serviceId => $info) {
+            $formName = $this->extractFormName($info['tags']);
+            if (!$formName) {
+                continue;
+            }
+
+            $forms[$formName] = $serviceId;
         }
-        $this->loaded = false;
+        return $forms;
+    }
+
+    private function extractFormName(&$tags)
+    {
+        foreach ($tags as $tag) {
+            if (isset($tag['name']) && $tag['name'] === 'wolf-forms.form' && isset($tag['key'])) {
+                return $tag['key'];
+            }
+        }
+        return null;
     }
 
     private function prepareCacheDirectory()
     {
-        $cacheDir = WOLF_FORMS_PLUGIN_DIR . '/cache';
+        $cacheDir = WOLF_CORE_CACHE_DIR;
         if (!is_dir($cacheDir)) {
             mkdir($cacheDir, 0755, true);
         }
@@ -46,7 +58,7 @@ class Loader
 
     private function saveCacheForms($forms)
     {
-        $cacheFile = WOLF_FORMS_PLUGIN_DIR . '/cache/forms.php';
+        $cacheFile = WOLF_CORE_CACHE_DIR . '/forms.php';
         $content = "<?php\n\nreturn " . var_export($forms, true) . ";\n";
         file_put_contents($cacheFile, $content);
     }

@@ -14,5 +14,8 @@ class Plugin
         $container = \Wolf\Core\DependencyInjection\Container::getInstance();
         $loader = $container->get('wolf-forms.form.manager.loader');
         $loader->load();
+
+        $interceptor = $container->get('wolf-forms.form.interceptor');
+        $interceptor->intercept();
     }
 }
